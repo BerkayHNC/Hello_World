@@ -26,12 +26,38 @@ class Body extends StatefulWidget {
 class _BodyState extends State<Body> {
   User? user;
 
-  
+  @override
+  void initState() {
+    super.initState();
+    signOutGoogle();
+  }
+
   void click() {
-    signInWithGoogle().then((user) => {
-      this.user = user,
-      Navigator.push(context, 
-        MaterialPageRoute(builder: (context) => MyHomePage(user?.displayName?? '')))
+    signInWithGoogle().then((user) {
+      if (user != null) {
+        setState(() {
+          this.user = user;
+        });
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MyHomePage(user)),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to sign in with Google'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }).catchError((error) {
+      print('Error during sign in: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error signing in: $error'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
     });
   }
 
